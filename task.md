@@ -19,10 +19,10 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
   - `[x]` Verify test fails (`pytest`)
   - `[x]` Implement Firebase token verification middleware in `backend/app/auth.py`
   - `[x]` Verify test passes (`pytest`)
-- `[ ]` **Task 2.3: LangChain & OpenAI Agent**
-  - `[ ]` Write `backend/tests/test_agent.py` (verifying prompt context and OpenAI interaction)
-  - `[ ]` Verify test fails (`pytest`)
-  - `[ ]` Implement LangChain agent and endpoint in `backend/app/agent.py` and `backend/app/main.py`
+- `[/]` **Task 2.3: LangChain & OpenAI Agent**
+  - `[x]` Write `backend/tests/test_agent.py` (verifying prompt context and OpenAI interaction)
+  - `[x]` Verify test fails (`pytest`)
+  - `[/]` Implement LangChain agent and endpoint in `backend/app/agent.py` and `backend/app/main.py`
   - `[ ]` Verify test passes (`pytest`)
 
 ## [ ] Phase 3: Frontend Test-Driven Development (TDD)
