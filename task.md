@@ -14,11 +14,11 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
   - `[x]` Implement `backend/app/mock_data.py` (restaurants around Streamwood, IL)
   - `[x]` Implement filtering logic in `backend/app/filter.py`
   - `[x]` Verify test passes (`pytest`)
-- `[ ]` **Task 2.2: Auth Middleware**
-  - `[ ]` Write `backend/tests/test_auth.py` (verifying token verification rejects unauthenticated requests)
-  - `[ ]` Verify test fails (`pytest`)
-  - `[ ]` Implement Firebase token verification middleware in `backend/app/auth.py`
-  - `[ ]` Verify test passes (`pytest`)
+- `[x]` **Task 2.2: Auth Middleware**
+  - `[x]` Write `backend/tests/test_auth.py` (verifying token verification rejects unauthenticated requests)
+  - `[x]` Verify test fails (`pytest`)
+  - `[x]` Implement Firebase token verification middleware in `backend/app/auth.py`
+  - `[x]` Verify test passes (`pytest`)
 - `[ ]` **Task 2.3: LangChain & OpenAI Agent**
   - `[ ]` Write `backend/tests/test_agent.py` (verifying prompt context and OpenAI interaction)
   - `[ ]` Verify test fails (`pytest`)
