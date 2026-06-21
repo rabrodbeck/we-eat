@@ -25,10 +25,10 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
   - `[x]` Implement LangChain agent and endpoint in `backend/app/agent.py` and `backend/app/main.py`
   - `[x]` Verify test passes (`pytest`)
 
-## [ ] Phase 3: Frontend Test-Driven Development (TDD)
-- `[ ]` **Task 3.1: Frontend Setup**
-  - `[ ]` Scaffold React 18 + TS + Vite in `frontend`
-  - `[ ]` Install packages (`firebase`, `vitest`, `@testing-library/react`, `@testing-library/jest-dom`)
+## [/] Phase 3: Frontend Test-Driven Development (TDD)
+- `[x]` **Task 3.1: Frontend Setup**
+  - `[x]` Scaffold React 18 + TS + Vite in `frontend`
+  - `[x]` Install packages (`firebase`, `vitest`, `@testing-library/react`, `@testing-library/jest-dom`)
 - `[ ]` **Task 3.2: Diner Selector Component**
   - `[ ]` Write `frontend/src/components/__tests__/DinerSelector.test.tsx`
   - `[ ]` Verify test fails (`npm run test`)
