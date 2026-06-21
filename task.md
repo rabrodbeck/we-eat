@@ -7,7 +7,7 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
 - `[x]` Set up backend virtual environment and install packages (`fastapi`, `uvicorn`, `pytest`, `pydantic`, `langchain`, `openai`, `supabase`)
 - `[x]` Create environment files (`.env` and `.env.example` in both frontend and backend)
 
-## [/] Phase 2: Backend Test-Driven Development (TDD)
+## [x] Phase 2: Backend Test-Driven Development (TDD)
 - `[x]` **Task 2.1: Filter Logic**
   - `[x]` Write `backend/tests/test_filtering.py` (verifying distance math and member veto checks)
   - `[x]` Verify test fails (`pytest`)
@@ -19,11 +19,11 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
   - `[x]` Verify test fails (`pytest`)
   - `[x]` Implement Firebase token verification middleware in `backend/app/auth.py`
   - `[x]` Verify test passes (`pytest`)
-- `[/]` **Task 2.3: LangChain & OpenAI Agent**
+- `[x]` **Task 2.3: LangChain & OpenAI Agent**
   - `[x]` Write `backend/tests/test_agent.py` (verifying prompt context and OpenAI interaction)
   - `[x]` Verify test fails (`pytest`)
-  - `[/]` Implement LangChain agent and endpoint in `backend/app/agent.py` and `backend/app/main.py`
-  - `[ ]` Verify test passes (`pytest`)
+  - `[x]` Implement LangChain agent and endpoint in `backend/app/agent.py` and `backend/app/main.py`
+  - `[x]` Verify test passes (`pytest`)
 
 ## [ ] Phase 3: Frontend Test-Driven Development (TDD)
 - `[ ]` **Task 3.1: Frontend Setup**
