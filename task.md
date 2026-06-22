@@ -48,5 +48,6 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
 ## [/] Phase 4: Integration, Styling, and Polish
 - `[x]` Implement premium design system in `frontend/src/index.css` (Glassmorphism, dark/light toggle, micro-animations)
 - `[x]` Connect React app to FastAPI endpoints
-- `[/]` Deploy frontend to Vercel (resolving Firebase authorized domains) and backend to Hugging Face Spaces (with Docker)
+- `[x]` Deploy frontend to Vercel (resolving Firebase authorized domains) and backend to Hugging Face Spaces (with Docker)
+
 
