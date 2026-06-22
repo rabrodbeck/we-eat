@@ -25,7 +25,7 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
   - `[x]` Implement LangChain agent and endpoint in `backend/app/agent.py` and `backend/app/main.py`
   - `[x]` Verify test passes (`pytest`)
 
-## [/] Phase 3: Frontend Test-Driven Development (TDD)
+## [x] Phase 3: Frontend Test-Driven Development (TDD)
 - `[x]` **Task 3.1: Frontend Setup**
   - `[x]` Scaffold React 18 + TS + Vite in `frontend`
   - `[x]` Install packages (`firebase`, `vitest`, `@testing-library/react`, `@testing-library/jest-dom`)
@@ -39,11 +39,11 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
   - `[x]` Verify test fails
   - `[x]` Implement `ProfileManager.tsx`
   - `[x]` Verify test passes
-- `[ ]` **Task 3.4: Authentication & Login Page**
-  - `[ ]` Write `frontend/src/components/__tests__/Login.test.tsx`
-  - `[ ]` Verify test fails
-  - `[ ]` Set up `firebase.ts` and implement `Login.tsx` with Google Auth
-  - `[ ]` Verify test passes
+- `[x]` **Task 3.4: Authentication & Login Page**
+  - `[x]` Write `frontend/src/components/__tests__/Login.test.tsx`
+  - `[x]` Verify test fails
+  - `[x]` Set up `firebase.ts` and implement `Login.tsx` with Google Auth
+  - `[x]` Verify test passes
 
 ## [ ] Phase 4: Integration, Styling, and Polish
 - `[ ]` Implement premium design system in `frontend/src/index.css` (Glassmorphism, dark/light toggle, micro-animations)
