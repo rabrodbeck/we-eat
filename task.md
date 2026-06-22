@@ -29,11 +29,11 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
 - `[x]` **Task 3.1: Frontend Setup**
   - `[x]` Scaffold React 18 + TS + Vite in `frontend`
   - `[x]` Install packages (`firebase`, `vitest`, `@testing-library/react`, `@testing-library/jest-dom`)
-- `[ ]` **Task 3.2: Diner Selector Component**
-  - `[ ]` Write `frontend/src/components/__tests__/DinerSelector.test.tsx`
-  - `[ ]` Verify test fails (`npm run test`)
-  - `[ ]` Implement `DinerSelector.tsx`
-  - `[ ]` Verify test passes
+- `[x]` **Task 3.2: Diner Selector Component**
+  - `[x]` Write `frontend/src/components/__tests__/DinerSelector.test.tsx`
+  - `[x]` Verify test fails (`npm run test`)
+  - `[x]` Implement `DinerSelector.tsx`
+  - `[x]` Verify test passes
 - `[ ]` **Task 3.3: Profile Manager Component**
   - `[ ]` Write `frontend/src/components/__tests__/ProfileManager.test.tsx`
   - `[ ]` Verify test fails
