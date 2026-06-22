@@ -34,11 +34,11 @@ This task list tracks the step-by-step TDD implementation of the **WeEat** appli
   - `[x]` Verify test fails (`npm run test`)
   - `[x]` Implement `DinerSelector.tsx`
   - `[x]` Verify test passes
-- `[ ]` **Task 3.3: Profile Manager Component**
-  - `[ ]` Write `frontend/src/components/__tests__/ProfileManager.test.tsx`
-  - `[ ]` Verify test fails
-  - `[ ]` Implement `ProfileManager.tsx`
-  - `[ ]` Verify test passes
+- `[x]` **Task 3.3: Profile Manager Component**
+  - `[x]` Write `frontend/src/components/__tests__/ProfileManager.test.tsx`
+  - `[x]` Verify test fails
+  - `[x]` Implement `ProfileManager.tsx`
+  - `[x]` Verify test passes
 - `[ ]` **Task 3.4: Authentication & Login Page**
   - `[ ]` Write `frontend/src/components/__tests__/Login.test.tsx`
   - `[ ]` Verify test fails
