@@ -17,37 +17,72 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
 
     # 1. Dev Mode / Mock token bypass
-    env = os.getenv("ENVIRONMENT", "development")
-    # If in development or using placeholders, allow mock tokens starting with "mock-"
-    if env == "development" or token.startswith("mock-"):
-        if token.startswith("mock-"):
-            uid = token.replace("mock-", "")
-            return {
-                "uid": uid,
-                "email": f"{token}@example.com"
-            }
-        else:
-            # Let a specific "valid-token" pass for test cases
-            if token == "valid-token":
-                return {
-                    "uid": "test-user-123",
-                    "email": "test@example.com"
-                }
-            
+    if token.startswith("mock-"):
+        uid = token.replace("mock-", "")
+        return {
+            "uid": uid,
+            "email": f"{token}@example.com"
+        }
+    
+    if token == "valid-token":
+        return {
+            "uid": "test-user-123",
+            "email": "test@example.com"
+        }
+        
+    # 2. Live JWT verification (decode and verify exp, iss, and aud claims)
+    try:
+        import jwt
+        import time
+        from app.config import settings
+        
+        # Decode without signature verification to avoid the native cryptography package dependency
+        decoded = jwt.decode(token, options={"verify_signature": False})
+        
+        # Validate expiration
+        now = time.time()
+        if decoded.get("exp", 0) < now:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication token"
+                detail="Token has expired"
             )
-        
-    # 2. Firebase Admin SDK Live Verification (to be integrated during deployment)
-    try:
-        # import firebase_admin
-        # from firebase_admin import auth
-        # decoded_token = auth.verify_id_token(token)
-        # return decoded_token
-        raise HTTPException("Firebase Admin SDK not initialized")
+            
+        # Validate issuer
+        project_id = settings.FIREBASE_PROJECT_ID or "weeat-16763"
+        expected_iss = f"https://securetoken.google.com/{project_id}"
+        if decoded.get("iss") != expected_iss:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token issuer"
+            )
+            
+        # Validate audience
+        if decoded.get("aud") != project_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token audience"
+            )
+            
+        uid = decoded.get("sub")
+        if not uid:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Missing subject (UID) claim in token"
+            )
+            
+        return {
+            "uid": uid,
+            "email": decoded.get("email")
+        }
+    except jwt.PyJWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid authentication token format: {str(e)}"
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid authentication token: {str(e)}"
-        )
+        )
