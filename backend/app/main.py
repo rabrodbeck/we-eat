@@ -57,7 +57,7 @@ def create_diner(diner: Diner, db: Session = Depends(get_db), user: dict = Depen
     db.refresh(db_diner)
     return diner
 
-@app.delete("api/diners/{name}")
+@app.delete("/api/diners/{name}")
 def delete_diner(name: str, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     """Delete a family member profile."""
     db_diner = db.query(DBFamilyMember).filter(
