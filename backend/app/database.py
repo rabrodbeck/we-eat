@@ -1,10 +1,8 @@
 import json
-from sqlalchemy import create_engine, Column, String, Integer, Text
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, String, Integer, Text, ForeignKey, Boolean
+from sqlalchemy.orm import declarative_base, sessionmaker
 from app.config import settings
 
-# Setup engine - connect_args chck is only needed for SQLite multithreading
 is_sqlite = settings.DATABASE_URL.startswith("sqlite")
 engine = create_engine(
     settings.DATABASE_URL,
@@ -14,13 +12,25 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+class DBFamily(Base):
+    __tablename__ = "families"
+
+    id = Column(String, primary_key=True, index=True) # UUID stored as string
+    family_name = Column(String, nullable=False)
+    created_by = Column(String, nullable=False) # Firebase UID of the head of family
+
 class DBFamilyMember(Base):
     __tablename__ = "family_members"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String, index=True) # Firebase UID of the owner
-    name = Column(String, index=True)
-    dislikes_json = Column(Text, default="[]") # List of dislikes stored as JSON string
+    family_id = Column(String, ForeignKey("families.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String, unique=True, index=True, nullable=True) # Mapped when invite accepted
+    name = Column(String, index=True, nullable=False)
+    dislikes_json = Column(Text, default="[]", nullable=False)
+    email = Column(String, nullable=True) # Invite email
+    invite_token = Column(String, unique=True, index=True, nullable=True) # Unique invite URL key
+    invite_accepted = Column(Boolean, default=False, nullable=False)
+    role = Column(String, default="member", nullable=False) # 'head' or 'member'
 
     @property
     def dislikes(self):
@@ -33,7 +43,7 @@ class DBFamilyMember(Base):
     def dislikes(self, value):
         self.dislikes_json = json.dumps(value)
 
-# Automatically create tables (for dev SQLite; production migration handles Supabase)
+# Automatically create tables (for dev SQLite)
 Base.metadata.create_all(bind=engine)
 
 def get_db():

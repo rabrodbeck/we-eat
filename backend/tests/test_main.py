@@ -44,5 +44,6 @@ def test_create_and_get_diners():
     # 2. Retrieve diner profiles
     response = client.get("/api/diners", headers=headers)
     assert response.status_code == 200
-    assert len(response.json()) == 1
-    assert response.json()[0]["name"] == "Olivia"
+    assert len(response.json()) == 2
+    assert response.json()[0]["name"] == "Head of Family"
+    assert response.json()[1]["name"] == "Olivia"
