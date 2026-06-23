@@ -2,9 +2,12 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 class Diner(BaseModel):
+    id: Optional[int] = None
     name: str
     is_active: bool = True
     dislikes: List[str] = Field(default_factory=list)
+    role: Optional[str] = "member"
+    invite_accepted: Optional[bool] = False
 
 class Restaurant(BaseModel):
     id: int
