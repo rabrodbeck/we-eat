@@ -3,13 +3,21 @@ import { describe, test, expect, vi } from 'vitest';
 import ProfileManager from '../ProfileManager';
 
 const mockDiners = [
-  { name: 'Olivia', dislikes: ['pizza', 'sushi'], is_active: true },
-  { name: 'Peyton', dislikes: ['mexican'], is_active: false }
+  { id: 1, name: 'Olivia', dislikes: ['pizza', 'sushi'], is_active: true, role: 'member' },
+  { id: 2, name: 'Peyton', dislikes: ['mexican'], is_active: false, role: 'member' }
 ];
 
 describe('ProfileManager Component', () => {
   test('renders list of family members and their dislikes', () => {
-    render(<ProfileManager diners={mockDiners} onAddDiner={vi.fn()} onDeleteDiner={vi.fn()} />);
+    render(
+      <ProfileManager 
+        diners={mockDiners} 
+        onAddDiner={vi.fn()} 
+        onDeleteDiner={vi.fn()} 
+        onUpdateDiner={vi.fn()} 
+        isHead={true} 
+      />
+    );
     
     expect(screen.getByText('Olivia')).toBeInTheDocument();
     expect(screen.getByText('pizza, sushi')).toBeInTheDocument();
@@ -20,7 +28,15 @@ describe('ProfileManager Component', () => {
 
   test('submitting the form calls onAddDiner with input values', () => {
     const handleAdd = vi.fn();
-    render(<ProfileManager diners={mockDiners} onAddDiner={handleAdd} onDeleteDiner={vi.fn()} />);
+    render(
+      <ProfileManager 
+        diners={mockDiners} 
+        onAddDiner={handleAdd} 
+        onDeleteDiner={vi.fn()} 
+        onUpdateDiner={vi.fn()} 
+        isHead={true} 
+      />
+    );
     
     // Fill in the form
     fireEvent.change(screen.getByPlaceholderText('Enter name'), { target: { value: 'Ryan' } });
@@ -36,14 +52,22 @@ describe('ProfileManager Component', () => {
     });
   });
 
-  test('clicking delete calls onDeleteDiner with diner name', () => {
+  test('clicking delete calls onDeleteDiner with diner id', () => {
     const handleDelete = vi.fn();
-    render(<ProfileManager diners={mockDiners} onAddDiner={vi.fn()} onDeleteDiner={handleDelete} />);
+    render(
+      <ProfileManager 
+        diners={mockDiners} 
+        onAddDiner={vi.fn()} 
+        onDeleteDiner={handleDelete} 
+        onUpdateDiner={vi.fn()} 
+        isHead={true} 
+      />
+    );
     
     // Click delete next to Olivia
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
     fireEvent.click(deleteButtons[0]); // First delete button is for Olivia
     
-    expect(handleDelete).toHaveBeenCalledWith('Olivia');
+    expect(handleDelete).toHaveBeenCalledWith(1);
   });
 });
