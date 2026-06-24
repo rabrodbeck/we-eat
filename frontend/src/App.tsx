@@ -109,13 +109,15 @@ function App() {
       });
       if (famRes.ok) {
         const famData = await famRes.json();
-        setFamily(famData);
-        setShowSetupWizard(false);
-      } else if (famRes.status === 404) {
-        // No family found. Pre-populate wizard head name with Google Display Name
-        setSetupFamilyName(`${user.displayName ? user.displayName.split(' ')[0] : 'My'} Family`);
-        setSetupHeadName(user.displayName || 'Head of Family');
-        setShowSetupWizard(true);
+        if (famData) {
+          setFamily(famData);
+          setShowSetupWizard(false);
+        } else {
+          // No family found (returned null) - Open setup wizard
+          setSetupFamilyName(`${user.displayName ? user.displayName.split(' ')[0] : 'My'} Family`);
+          setSetupHeadName(user.displayName || 'Head of Family');
+          setShowSetupWizard(true);
+        }
       }
 
       // 2. Get diners

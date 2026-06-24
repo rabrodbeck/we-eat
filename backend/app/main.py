@@ -59,11 +59,11 @@ def health_check():
     return {"status": "ok"}
 
 # Get a user's active family metadata
-@app.get("/api/family", response_model=FamilyResponse)
+@app.get("/api/family", response_model=Optional[FamilyResponse])
 def get_family(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     user_member = get_user_family_member_or_none(user["uid"], db)
     if not user_member:
-        raise HTTPException(status_code=404, detail="No family found for this user")
+        return None # TReturn 200 OK with null instead of raising a 404
     
     family = db.query(DBFamily).filter(DBFamily.id == user_member.family_id).first()
     return FamilyResponse(
