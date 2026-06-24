@@ -20,10 +20,10 @@ describe('ProfileManager Component', () => {
     );
     
     expect(screen.getByText('Olivia')).toBeInTheDocument();
-    expect(screen.getByText('pizza, sushi')).toBeInTheDocument();
+    expect(screen.getByText(/pizza, sushi/)).toBeInTheDocument();
     
     expect(screen.getByText('Peyton')).toBeInTheDocument();
-    expect(screen.getByText('mexican')).toBeInTheDocument();
+    expect(screen.getByText(/mexican/)).toBeInTheDocument();
   });
 
   test('submitting the form calls onAddDiner with input values', () => {
@@ -40,7 +40,10 @@ describe('ProfileManager Component', () => {
     
     // Fill in the form
     fireEvent.change(screen.getByPlaceholderText('Enter name'), { target: { value: 'Ryan' } });
-    fireEvent.change(screen.getByPlaceholderText('Enter dislikes (comma separated)'), { target: { value: 'onions, mushrooms' } });
+    
+    const dislikesInput = screen.getByPlaceholderText('Type a dislike and press Enter...');
+    fireEvent.change(dislikesInput, { target: { value: 'onions, mushrooms' } });
+    fireEvent.blur(dislikesInput);
     
     // Submit the form
     fireEvent.click(screen.getByRole('button', { name: /add member/i }));

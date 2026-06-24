@@ -30,10 +30,10 @@ describe('Login Component', () => {
         fireEvent.click(screen.getByRole('button', { name: /demo sign in/i }));
 
         expect(handleSuccess).toHaveBeenCalledWith({
-            uid: 'user123',
-            email: 'mock-user123@example.com',
+            uid: 'user456',
+            email: 'mock-user456@example.com',
             displayName: 'Mock User',
-            token: 'mock-user123'
+            token: 'mock-user456'
         });
     });
 

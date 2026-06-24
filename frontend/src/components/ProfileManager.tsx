@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TagInput from './TagInput';
 
 interface Diner {
   id?: number;
@@ -28,22 +29,16 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({
   isHead
 }) => {
   const [name, setName] = useState('');
-  const [dislikesInput, setDislikesInput] = useState('');
+  const [dislikes, setDislikes] = useState<string[]>([]);
   
   // State to track which diner is being edited
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
-  const [editDislikesInput, setEditDislikesInput] = useState('');
+  const [editDislikes, setEditDislikes] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-
-    // Parse comma-separated dislikes list
-    const dislikes = dislikesInput
-      .split(',')
-      .map(item => item.trim())
-      .filter(item => item !== '');
 
     onAddDiner({
       name: name.trim(),
@@ -53,26 +48,21 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({
 
     // Reset form inputs
     setName('');
-    setDislikesInput('');
+    setDislikes([]);
   };
 
   const startEdit = (diner: Diner) => {
     if (diner.id === undefined) return;
     setEditingId(diner.id);
     setEditName(diner.name);
-    setEditDislikesInput(diner.dislikes.join(', '));
+    setEditDislikes(diner.dislikes);
   };
 
   const handleUpdateSubmit = (e: React.FormEvent, id: number) => {
     e.preventDefault();
     if (!editName.trim()) return;
 
-    const dislikes = editDislikesInput
-      .split(',')
-      .map(item => item.trim())
-      .filter(item => item !== '');
-
-    onUpdateDiner(id, editName.trim(), dislikes);
+    onUpdateDiner(id, editName.trim(), editDislikes);
     setEditingId(null);
   };
 
@@ -104,13 +94,10 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({
                   style={{ fontSize: '0.85rem', padding: '6px' }}
                   required
                 />
-                <input 
-                  type="text" 
-                  placeholder="Dislikes (comma separated)"
-                  value={editDislikesInput}
-                  onChange={(e) => setEditDislikesInput(e.target.value)}
-                  className="diner-input"
-                  style={{ fontSize: '0.85rem', padding: '6px' }}
+                <TagInput
+                  tags={editDislikes}
+                  onChange={setEditDislikes}
+                  placeholder="Add a dislike..."
                 />
                 <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
                   <button type="submit" className="add-diner-btn" style={{ padding: '4px 8px', fontSize: '0.8rem' }}>Save</button>
@@ -176,11 +163,10 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({
             />
           </div>
           <div className="form-group">
-            <input
-              type="text"
-              placeholder="Enter dislikes (comma separated)"
-              value={dislikesInput}
-              onChange={(e) => setDislikesInput(e.target.value)}
+            <TagInput
+              tags={dislikes}
+              onChange={setDislikes}
+              placeholder="Type a dislike and press Enter..."
             />
           </div>
           <button type="submit" className="submit-btn" style={{ marginTop: '5px' }}>
