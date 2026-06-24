@@ -14,6 +14,7 @@ interface Diner {
   invite_token?: string;
   invite_accepted?: boolean;
   role?: string;
+  user_id?: string;
 }
 
 interface Message {
@@ -47,6 +48,11 @@ function App() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [invitingDinerId, setInvitingDinerId] = useState<number | null>(null);
   const [generatedInviteLink, setGeneratedInviteLink] = useState<string | null>(null);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [setupFamilyName, setSetupFamilyName] = useState('');
+  const [setupHeadName, setSetupHeadName] = useState('');
+  const [isEditingFamilyName, setIsEditingFamilyName] = useState(false);
+  const [tempFamilyName, setTempFamilyName] = useState('');
 
   const USER_LAT = 42.0234;
   const USER_LON = -88.1837;
@@ -97,14 +103,22 @@ function App() {
   const fetchFamilyAndDiners = async () => {
     if (!user) return;
     try {
+      // 1. Get family details
       const famRes = await fetch(`${BACKEND_URL}/api/family`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       if (famRes.ok) {
         const famData = await famRes.json();
         setFamily(famData);
+        setShowSetupWizard(false);
+      } else if (famRes.status === 404) {
+        // No family found. Pre-populate wizard head name with Google Display Name
+        setSetupFamilyName(`${user.displayName ? user.displayName.split(' ')[0] : 'My'} Family`);
+        setSetupHeadName(user.displayName || 'Head of Family');
+        setShowSetupWizard(true);
       }
 
+      // 2. Get diners
       const dinersRes = await fetch(`${BACKEND_URL}/api/diners`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
@@ -114,6 +128,50 @@ function App() {
       }
     } catch (err) {
       console.error('Failed to fetch data:', err);
+    }
+  };
+
+  // Create Family
+  const handleCreateFamily = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !setupFamilyName.trim() || !setupHeadName.trim()) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/family`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          family_name: setupFamilyName.trim(),
+          head_name: setupHeadName.trim()
+        })
+      });
+      if (res.ok) {
+        fetchFamilyAndDiners();
+      }
+    } catch (err) {
+      console.error('Failed to create family:', err);
+    }
+  };
+
+  // Rename family
+  const handleRenameFamily = async (newName: string) => {
+    if (!user) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/family`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ family_name: newName })
+      });
+      if (res.ok) {
+        fetchFamilyAndDiners();
+      }
+    } catch (err) {
+      console.error('Failed to rename family:', err);
     }
   };
 
@@ -137,11 +195,31 @@ function App() {
     }
   };
 
-  // Delete Diner Profile
-  const handleDeleteDiner = async (name: string) => {
+  // Update Diner Profile
+  const handleUpdateDiner = async (id: number, updatedName: string, updatedDislikes: string[]) => {
     if (!user) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/diners/${name}`, {
+      const res = await fetch(`${BACKEND_URL}/api/diners/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ name: updatedName, dislikes: updatedDislikes })
+      });
+      if (res.ok) {
+        fetchFamilyAndDiners();
+      }
+    } catch (err) {
+      console.error('Failed to update diner:', err);
+    }
+  };
+
+  // Delete Diner Profile (Updated to use ID)
+  const handleDeleteDiner = async (id: number) => {
+    if (!user) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/diners/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user.token}` }
       });
@@ -236,6 +314,47 @@ function App() {
     return <Login onLoginSuccess={setUser} />;
   }
 
+  if (showSetupWizard) {
+    return (
+      <div className="login-container">
+        <div className="login-card glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '30px' }}>
+          <h2>Welcome to WeEat!</h2>
+          <p className="subtitle">Let's set up your family meal planner.</p>
+          
+          <form onSubmit={handleCreateFamily} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', textAlign: 'left' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>Family Group Name:</label>
+              <input 
+                type="text" 
+                value={setupFamilyName}
+                onChange={(e) => setSetupFamilyName(e.target.value)}
+                className="diner-input"
+                style={{ width: '100%', padding: '8px' }}
+                required
+              />
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', textAlign: 'left' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>Your Profile Name (Diner name):</label>
+              <input 
+                type="text" 
+                value={setupHeadName}
+                onChange={(e) => setSetupHeadName(e.target.value)}
+                className="diner-input"
+                style={{ width: '100%', padding: '8px' }}
+                required
+              />
+            </div>
+            
+            <button type="submit" className="add-diner-btn" style={{ padding: '10px', marginTop: '10px' }}>
+              Create Family Workspace
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-layout">
       {/* Sidebar Controls */}
@@ -250,16 +369,67 @@ function App() {
           
           {family && (
             <div className="family-badge" style={{ fontSize: '0.9rem', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
-              <div><strong>Family Dashboard:</strong> {family.family_name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {isEditingFamilyName ? (
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleRenameFamily(tempFamilyName);
+                    setIsEditingFamilyName(false);
+                  }} style={{ display: 'flex', gap: '5px', width: '100%' }}>
+                    <input 
+                      type="text" 
+                      value={tempFamilyName}
+                      onChange={(e) => setTempFamilyName(e.target.value)}
+                      className="diner-input"
+                      style={{ fontSize: '0.8rem', padding: '4px', flex: 1 }}
+                    />
+                    <button type="submit" className="add-diner-btn" style={{ padding: '4px 8px' }}>Save</button>
+                    <button type="button" className="demo-signin-btn" style={{ padding: '4px 8px' }} onClick={() => setIsEditingFamilyName(false)}>Cancel</button>
+                  </form>
+                ) : (
+                  <>
+                    <div><strong>Family:</strong> {family.family_name}</div>
+                    {isHead && (
+                      <button 
+                        onClick={() => {
+                          setTempFamilyName(family.family_name);
+                          setIsEditingFamilyName(true);
+                        }} 
+                        style={{ background: 'none', border: 'none', color: '#ffb300', cursor: 'pointer', fontSize: '0.8rem' }}
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
               <div style={{ fontSize: '0.75rem', color: '#aaa', marginTop: '4px' }}>
                 Role: {isHead ? 'Family Head' : 'Family Member'}
               </div>
             </div>
           )}
+        </div>
 
-          {/* Allow Head of Family to invite diners */}
-          {isHead && (
-            <div style={{ marginTop: '10px', padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
+        <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '20px 0' }} />
+
+        <DinerSelector diners={diners} onToggleDiners={handleToggleDiners} />
+        
+        <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '20px 0' }} />
+        
+        <ProfileManager 
+          diners={diners} 
+          onAddDiner={handleAddDiner} 
+          onDeleteDiner={handleDeleteDiner} 
+          onUpdateDiner={handleUpdateDiner} 
+          currentUserUid={user.uid}
+          isHead={!!isHead}
+        />
+
+        {/* Allow Head of Family to invite diners at the bottom */}
+        {isHead && (
+          <>
+            <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '20px 0' }} />
+            <div style={{ padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
               <div style={{ fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '5px' }}>Invite a Member to Login:</div>
               <form onSubmit={handleInviteDiner} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <select 
@@ -298,16 +468,8 @@ function App() {
                 </div>
               )}
             </div>
-          )}
-        </div>
-
-        <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '20px 0' }} />
-
-        <DinerSelector diners={diners} onToggleDiners={handleToggleDiners} />
-        
-        <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '20px 0' }} />
-        
-        <ProfileManager diners={diners} onAddDiner={handleAddDiner} onDeleteDiner={handleDeleteDiner} />
+          </>
+        )}
       </aside>
 
       {/* Chat Area */}

@@ -35,15 +35,21 @@ def test_create_and_get_diners():
     """Verify that we can create a diner profile and retrieve it using authentication."""
     headers = {"Authorization": "Bearer mock-user123"}
 
-    # 1. Create a diner profile
+    # 1. Create family first
+    fam_payload = {"family_name": "Smith Family", "head_name": "John"}
+    response = client.post("/api/family", json=fam_payload, headers=headers)
+    assert response.status_code == 200
+    assert response.json()["family_name"] == "Smith Family"
+
+    # 2. Create a diner profile
     diner_payload = {"name": "Olivia", "dislikes": ["pizza"], "is_active": True}
     response = client.post("/api/diners", json=diner_payload, headers=headers)
     assert response.status_code == 200
     assert response.json()["name"] == "Olivia"
 
-    # 2. Retrieve diner profiles
+    # 3. Retrieve diner profiles
     response = client.get("/api/diners", headers=headers)
     assert response.status_code == 200
     assert len(response.json()) == 2
-    assert response.json()[0]["name"] == "Head of Family"
+    assert response.json()[0]["name"] == "John"
     assert response.json()[1]["name"] == "Olivia"

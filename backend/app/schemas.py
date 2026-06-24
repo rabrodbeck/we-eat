@@ -8,6 +8,7 @@ class Diner(BaseModel):
     dislikes: List[str] = Field(default_factory=list)
     role: Optional[str] = "member"
     invite_accepted: Optional[bool] = False
+    user_id: Optional[str] = None
 
 class Restaurant(BaseModel):
     id: int

@@ -38,34 +38,21 @@ class InviteMemberRequest(BaseModel):
 class AcceptInviteRequest(BaseModel):
     invite_token: str
 
-# Helper function to get a user's family or create one if th ey are new
-def get_user_family_member(user_uid: str, db: Session) -> DBFamilyMember:
-    # 1. Look for a family member profile mapped to this user login
-    member = db.query(DBFamilyMember).filter(DBFamilyMember.user_id == user_uid).first()
+class CreateFamilyRequest(BaseModel):
+    family_name: str
+    head_name: str
 
-    if not member:
-        # User is brand new (not invited and has no family yet) Auto-create family.
-        family_id = str(uuid.uuid4())
-        new_family = DBFamily(
-            id=family_id,
-            family_name="My Family",
-            created_by=user_uid
-        )
-        db.add(new_family)
+class UpdateFamilyRequest(BaseModel):
+    family_name: str
 
-        # Create their corresponding Head of Family diner profile
-        member = DBFamilyMember(
-            family_id=family_id,
-            user_id=user_uid,
-            name="Head of Family",
-            role="head",
-            invite_accepted=True
-        )
-        db.add(member)
-        db.commit()
-        db.refresh(member)
+class UpdateDinerRequest(BaseModel):
+    name: str
+    dislikes: List[str]
 
-    return member
+# Helper function to find a user's family membership (without auto-creating)
+def get_user_family_member_or_none(user_uid: str, db: Session) -> Optional[DBFamilyMember]:
+    return db.query(DBFamilyMember).filter(DBFamilyMember.user_id == user_uid).first()
+    
 
 @app.get("/api/health")
 def health_check():
@@ -74,8 +61,68 @@ def health_check():
 # Get a user's active family metadata
 @app.get("/api/family", response_model=FamilyResponse)
 def get_family(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    user_member = get_user_family_member(user["uid"], db)
+    user_member = get_user_family_member_or_none(user["uid"], db)
+    if not user_member:
+        raise HTTPException(status_code=404, detail="No family found for this user")
+    
     family = db.query(DBFamily).filter(DBFamily.id == user_member.family_id).first()
+    return FamilyResponse(
+        id=str(family.id),
+        family_name=family.family_name,
+        created_by=family.created_by
+    )
+
+# Create/Initialize a new family (first-time setup)
+@app.post("/api/family", response_model=FamilyResponse)
+def create_family(req: CreateFamilyRequest, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    # Check if user already belongs to a family
+    existing_member = get_user_family_member_or_none(user["uid"], db)
+    if existing_member:
+        raise HTTPException(status_code=400, detail="User already belongs to a family")
+    
+    family_id = str(uuid.uuid4())
+
+    # Create new family
+    new_family = DBFamily(
+        id=family_id,
+        family_name=req.family_name,
+        created_by=user["uid"]
+    )
+    db.add(new_family)
+
+    # Create corresponding head-of-family diner profile
+    new_member = DBFamilyMember(
+        family_id=family_id,
+        user_id=user["uid"],
+        name=req.head_name,
+        role="head",
+        invite_accepted=True
+    )
+    db.add(new_member)
+
+    db.commit()
+    db.refresh(new_family)
+
+    return FamilyResponse(
+        id=str(new_family.id),
+        family_name=new_family.family_name,
+        created_by=new_family.created_by
+    )
+
+# Rename the family (Family Head only)
+@app.put("/api/family", response_model=FamilyResponse)
+def update_family(req: UpdateFamilyRequest, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    user_member = get_user_family_member_or_none(user["uid"], db)
+    if not user_member:
+        raise HTTPException(status_code=404, detail="User profile not found")
+    
+    if user_member.role != "head":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the family head can rename the family")
+    
+    family = db.query(DBFamily).filter(DBFamily.id == user_member.family_id).first()
+    family.family_name = req.family_name
+    db.commit()
+    db.refresh(family)
     return FamilyResponse(
         id=str(family.id),
         family_name=family.family_name,
@@ -85,8 +132,10 @@ def get_family(db: Session = Depends(get_db), user: dict = Depends(verify_token)
 # Send an invite to an existing family member profile
 @app.post("/api/family/invite")
 def invite_member(req: InviteMemberRequest, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    user_member = get_user_family_member(user["uid"], db)
-
+    user_member = get_user_family_member_or_none(user["uid"], db)
+    if not user_member:
+        raise HTTPException(status_code=404, detail="User profile not found")
+    
     # Verify requesting user is the Head of the Family
     if user_member.role != "head":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the family head can invite members")
@@ -104,20 +153,19 @@ def invite_member(req: InviteMemberRequest, db: Session = Depends(get_db), user:
     target_member.email = req.email
     target_member.invite_token = str(uuid.uuid4())
     target_member.invite_accepted = False
-    
     db.commit()
 
     # Return the link so the owner can copy/send it
     invite_link = f"/invite?token={target_member.invite_token}"
     return {"message": "Invite generated successfully", "invite_link": invite_link}
 
-# Accept and invitation
+# Accept an invitation
 @app.post("/api/family/accept-invite")
 def accept_invite(req: AcceptInviteRequest, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     # Find the diner profile matching this invite token
     member = db.query(DBFamilyMember).filter(DBFamilyMember.invite_token == req.invite_token).first()
     if not member:
-        raise HTTPException(status_code=404, detail="Invalid or expired invite token")
+        raise HTTPException(status_code=404, detail="invalid or expired invite token")
     
     if member.invite_accepted:
         raise HTTPException(status_code=400, detail="Invite has already been accepted")
@@ -137,15 +185,20 @@ def accept_invite(req: AcceptInviteRequest, db: Session = Depends(get_db), user:
 # Get all diners in the user's family
 @app.get("/api/diners", response_model=List[Diner])
 def get_diners(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    user_member = get_user_family_member(user["uid"], db)
+    user_member = get_user_family_member_or_none(user["uid"], db)
+    if not user_member:
+        return [] # Return empty list if no family exists yet
+    
     db_diners = db.query(DBFamilyMember).filter(DBFamilyMember.family_id == user_member.family_id).all()
-    return [Diner(id=d.id, name=d.name, dislikes=d.dislikes, is_active=True, role=d.role, invite_accepted=d.invite_accepted) for d in db_diners]
+    return [Diner(id=d.id, name=d.name, dislikes=d.dislikes, is_active=True, role=d.role, invite_accepted=d.invite_accepted, user_id=d.user_id) for d in db_diners]
 
 # Add a diner to the family
 @app.post("/api/diners", response_model=Diner)
 def create_diner(diner: Diner, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    user_member = get_user_family_member(user["uid"], db)
-
+    user_member = get_user_family_member_or_none(user["uid"], db)
+    if not user_member:
+        raise HTTPException(status_code=400, detail="User must belong to a family to add diners")
+    
     existing = db.query(DBFamilyMember).filter(
         DBFamilyMember.family_id == user_member.family_id,
         DBFamilyMember.name == diner.name
@@ -169,22 +222,61 @@ def create_diner(diner: Diner, db: Session = Depends(get_db), user: dict = Depen
         dislikes=db_diner.dislikes,
         is_active=True,
         role=db_diner.role,
-        invite_accepted=db_diner.invite_accepted
+        invite_accepted=db_diner.invite_accepted,
+        user_id=db_diner.user_id
     )
 
-# Delete a diner from the family
-@app.delete("/api/diners/{name}")
-def delete_diner(name: str, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    user_member = get_user_family_member(user["uid"], db)
-
-    db_diner = db.query(DBFamilyMember).filter(
-        DBFamilyMember.family_id == user_member.family_id,
-        DBFamilyMember.name == name
-    ).first()
-    if not db_diner:
-        raise HTTPException(status_code=404, detail="Diner profile not found in this family")
+# Update a diner profile (Family Head of the linked user only)
+@app.put("/api/diners/{member_id}", response_model=Diner)
+def update_diner(member_id: int, req: UpdateDinerRequest, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    user_member = get_user_family_member_or_none(user["uid"], db)
+    if not user_member:
+        raise HTTPException(status_code=400, detail="User profile not found")
     
-    # Prevent deleting the Head of Family
+    target_member = db.query(DBFamilyMember).filter(
+        DBFamilyMember.id == member_id,
+        DBFamilyMember.family_id == user_member.family_id
+    ).first()
+
+    if not target_member:
+        raise HTTPException(status_code=404, detail="Diner profile not found in your family")
+    
+    if user_member.role != "head" and target_member.user_id != user["uid"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this diner profile")
+    
+    target_member.name = req.name
+    target_member.dislikes = req.dislikes
+    db.commit()
+    db.refresh(target_member)
+
+    return Diner(
+        id=target_member.id,
+        name=target_member.name,
+        dislikes=target_member.dislikes,
+        is_active=True,
+        role=target_member.role,
+        invite_accepted=target_member.invite_accepted,
+        user_id=target_member.user_id
+    )
+
+# Delete a diner profile (Family Head only)
+@app.delete("/api/diners/{member_id}")
+def delete_user(member_id: int, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    user_member = get_user_family_member_or_none(user["uid"], db)
+    if not user_member:
+        raise HTTPException(status_code=400, detail="User profile not found")
+    
+    if user_member.role != "head":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the family head can delete profiles")
+    
+    db_diner = db.query(DBFamilyMember).filter(
+        DBFamilyMember.id == member_id,
+        DBFamilyMember.family_id == user_member.family_id
+    ).first()
+
+    if not db_diner:
+        raise HTTPException(status_code=404, detail="Diner profile not found in your family")
+    
     if db_diner.role == "head":
         raise HTTPException(status_code=400, detail="Cannot delete the head of the family")
     
@@ -193,9 +285,12 @@ def delete_diner(name: str, db: Session = Depends(get_db), user: dict = Depends(
     return {"message": "Diner profile deleted successfully"}
 
 # Recommendation scopes within the active family
-@app.post("/api/recommend")
+@app.post("/aip/recommend")
 def recommend_restaurants(req: RecommendRequest, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    user_member = get_user_family_member(user["uid"], db)
+    user_member = get_user_family_member_or_none(user["uid"])
+    if not user_member:
+        raise HTTPException(status_code=400, detail="User must belong to a family to request recommendations")
+    
     db_diners = db.query(DBFamilyMember).filter(DBFamilyMember.family_id == user_member.family_id).all()
 
     diners_list = []
@@ -210,5 +305,5 @@ def recommend_restaurants(req: RecommendRequest, db: Session = Depends(get_db), 
         user_lon=req.user_lon,
         max_distance_miles=req.max_distance_miles
     )
-
+    
     return {"recommendation": recommendation}

@@ -31,7 +31,7 @@ const DinerSelector: React.FC<DinerSelectorProps> = ({ diners, onToggleDiners })
       <h3>Who is eating?</h3>
       <div className="diner-list">
         {diners.map((diner) => (
-          <div key={diner.name} className="diner-item">
+          <div key={diner.name} className="diner-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <label htmlFor={`checkbox-${diner.name}`} className="diner-label">
               <input
                 id={`checkbox-${diner.name}`}
@@ -41,7 +41,7 @@ const DinerSelector: React.FC<DinerSelectorProps> = ({ diners, onToggleDiners })
               />
               <span>{diner.name}</span>
             </label>
-            <span className="diner-dislikes">
+            <span className="diner-dislikes" style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
               {diner.dislikes.length > 0 ? `Dislikes: ${diner.dislikes.join(', ')}` : 'No dislikes'}
             </span>
           </div>

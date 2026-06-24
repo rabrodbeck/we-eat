@@ -37,10 +37,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   const handleDemoSignIn = () => {
     onLoginSuccess({
-      uid: 'user123',
-      email: 'mock-user123@example.com',
+      uid: 'user456',
+      email: 'mock-user456@example.com',
       displayName: 'Mock User',
-      token: 'mock-user123'
+      token: 'mock-user456'
     });
   };
 
