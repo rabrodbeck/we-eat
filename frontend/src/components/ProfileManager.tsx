@@ -183,7 +183,7 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({
               onChange={(e) => setDislikesInput(e.target.value)}
             />
           </div>
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="submit-btn" style={{ marginTop: '5px' }}>
             Add Member
           </button>
         </form>
