@@ -11,6 +11,59 @@ interface ChatAgentProps {
     loading: boolean;
 }
 
+const renderMessageText = (text: string) => {
+  // Matches: **[Name](URL)** or [Name](URL)
+  const regex = /(\*\*\[.*?\]\(.*?\)\*\*|\[.*?\]\(.*?\))/g;
+  const parts = text.split(regex)
+
+  return parts.map((part, index) => {
+    // Match bold link **[Name](URL)**
+    const boldLinkMatch = part.match(/\*\*\[(.*?)\]\((.*?)\)\*\*/);
+    if (boldLinkMatch) {
+      const [, name, url] = boldLinkMatch;
+      return (
+        <a
+          key={index}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#10b981', textDecoration: 'underline', fontWeight: 'bold'}}
+        >
+          {name}
+        </a>
+      );
+    }
+
+    // Match regular link [Name](URL)
+    const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
+    if (linkMatch) {
+      const [, name, url] = linkMatch;
+      return (
+        <a
+          key={index}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#10b981', textDecoration: 'underline' }}
+        >
+          {name}
+        </a>
+      );
+    }
+
+    // Match bold text: **text**
+    const boldRegex = /(\*\*.*?\*\*)/g;
+    const subParts = part.split(boldRegex);
+    return subParts.map((subPart, subIndex) => {
+      const boldMatch = subPart.match(/^\*\*(.*?)\*\*$/);
+      if (boldMatch) {
+        return <strong key={`${index}-${subIndex}`}>{boldMatch[1]}</strong>;
+      }
+      return subPart;
+    });
+  });
+};
+
 const ChatAgent: React.FC<ChatAgentProps> = ({ messages, onSendMessage, loading }) => {
   const [input, setInput] = useState('');
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,7 +77,7 @@ const ChatAgent: React.FC<ChatAgentProps> = ({ messages, onSendMessage, loading 
       <div className="chat-messages" style={{ flexGrow: 1, overflowY: 'auto' }}>
         {messages.map((msg, index) => (
           <div key={index} className={`chat-bubble ${msg.sender}`}>
-            {msg.text}
+            {renderMessageText(msg.text)}
           </div>
         ))}
         {loading && (
