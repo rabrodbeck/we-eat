@@ -3,16 +3,19 @@ from typing import List
 from langchain_openai import ChatOpenAI
 from app.schemas import Diner
 from app.filter import filter_restaurants
-from app.mock_data import MOCK_RESTAURANTS
+from app.yelp import fetch_live_restaurants
 
 def get_recommendations(query: str, diners: List[Diner], user_lat: float, user_lon: float, max_distance_miles: float) -> str:
     """
     Filters restaurants based on active diner vetoes and distance, then uses LangChain + OpenAI
     to generate a conversational suggestion.
     """
+
+    live_restaurants = fetch_live_restaurants(user_lat, user_lon, max_distance_miles)
+
     # 1. Filter restaurants using our core logic
     allowed_restaurants = filter_restaurants(
-        restaurants=MOCK_RESTAURANTS,
+        restaurants=live_restaurants,
         diners=diners,
         user_lat=user_lat,
         user_lon=user_lon,
