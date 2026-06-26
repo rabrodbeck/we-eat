@@ -5,7 +5,7 @@ from app.filter import filter_restaurants
 # Mock Restaurant Data centered around Streamwood, IL (coordinates: 42.0234, -88.1837)
 MOCK_RESTAURANTS = [
     Restaurant(
-        id=1,
+        id="1",
         name="Streamwood Pizza Co",
         cuisine="Pizza",
         disliked_tags=["pizza", "italian", "cheese"],
@@ -16,7 +16,7 @@ MOCK_RESTAURANTS = [
         address="123 Main St, Streamwood, IL"
     ),
     Restaurant(
-        id=2,
+        id="2",
         name="Elgin Burger Joint",
         cuisine="Burgers",
         disliked_tags=["burger", "beef", "fast-food"],
@@ -27,7 +27,7 @@ MOCK_RESTAURANTS = [
         address="456 State St, Elgin, IL"
     ),
     Restaurant(
-        id=3,
+        id="3",
         name="Schaumburg Sushi",
         cuisine="Sushi",
         disliked_tags=["sushi", "fish", "raw"],
@@ -38,7 +38,7 @@ MOCK_RESTAURANTS = [
         address="789 Golf Rd, Schaumburg, IL"
     ),
     Restaurant(
-        id=4,
+        id="4",
         name="Hoffman Estates Tacos",
         cuisine="Mexican",
         disliked_tags=["tacos", "mexican", "spicy"],

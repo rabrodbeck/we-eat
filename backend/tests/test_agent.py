@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from app.schemas import Diner
 from app.agent import get_recommendations
+from tests.test_filtering import MOCK_RESTAURANTS
 
 def test_agent_includes_restaurant_context():
     """
@@ -13,6 +14,7 @@ def test_agent_includes_restaurant_context():
     query = "Recommend a place to eat near me"
 
     with patch("app.agent.ChatOpenAI") as mock_chat_openai, \
+         patch("app.agent.fetch_live_restaurants", return_value=MOCK_RESTAURANTS), \
          patch("app.agent.os.getenv", return_value="sk-test-key"):
         mock_instance = MagicMock()
         mock_instance.invoke.return_value.content = "I recommend Elgin Burger Joint because you dislike pizza."
