@@ -13,7 +13,10 @@ MOCK_RESTAURANTS = [
         longitude=-88.1837,
         rating=4.5,
         price_level=2,
-        address="123 Main St, Streamwood, IL"
+        address="123 Main St, Streamwood, IL",
+        url="streamwoodpizzaco.com",
+        distance=2.0,
+        hours_today="12:00 PM - 10:00 PM"
     ),
     Restaurant(
         id="2",
@@ -24,7 +27,10 @@ MOCK_RESTAURANTS = [
         longitude=-88.2830,
         rating=4.2,
         price_level=1,
-        address="456 State St, Elgin, IL"
+        address="456 State St, Elgin, IL",
+        url="elginburgerjoint.com",
+        distance=3.0,
+        hours_today="11:00 AM - 9:00 PM"
     ),
     Restaurant(
         id="3",
@@ -35,7 +41,10 @@ MOCK_RESTAURANTS = [
         longitude=-88.0830,
         rating=4.8,
         price_level=3,
-        address="789 Golf Rd, Schaumburg, IL"
+        address="789 Golf Rd, Schaumburg, IL",
+        url="schaumburgsushi.com",
+        distance=5.0,
+        hours_today="10:00 AM - 10:00 PM"
     ),
     Restaurant(
         id="4",
@@ -46,7 +55,10 @@ MOCK_RESTAURANTS = [
         longitude=-88.1330,
         rating=4.4,
         price_level=2,
-        address="321 Higgins Rd, Hoffman Estates, IL"
+        address="321 Higgins Rd, Hoffman Estates, IL",
+        url="hoffmanestate.com",
+        distance=3.5,
+        hours_today="1:00 PM - 11:00 PM"
     )
 ]
 
