@@ -11,7 +11,7 @@ class Diner(BaseModel):
     user_id: Optional[str] = None
 
 class Restaurant(BaseModel):
-    id: int
+    id: str
     name: str
     cuisine: str
     disliked_tags: List[str] = Field(default_factory=list)
