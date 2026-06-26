@@ -47,7 +47,8 @@ INSTRUCTIONS:
 """
     
     # 3. LLM Invocation or Mock Fallback
-    api_key = os.getenv("OPENAI_API_KEY", "")
+    from app.config import settings
+    api_key = settings.OPENAI_API_KEY
 
     # Check if we should Mock LLM mode (if key is empty or placeholder)
     if not api_key or api_key == "your-openai-api-key" or api_key.startswith("["):

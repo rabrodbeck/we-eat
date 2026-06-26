@@ -285,9 +285,9 @@ def delete_user(member_id: int, db: Session = Depends(get_db), user: dict = Depe
     return {"message": "Diner profile deleted successfully"}
 
 # Recommendation scopes within the active family
-@app.post("/aip/recommend")
+@app.post("/api/recommend")
 def recommend_restaurants(req: RecommendRequest, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    user_member = get_user_family_member_or_none(user["uid"])
+    user_member = get_user_family_member_or_none(user["uid"], db)
     if not user_member:
         raise HTTPException(status_code=400, detail="User must belong to a family to request recommendations")
     
