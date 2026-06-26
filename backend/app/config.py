@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     DATABASE_URL: str = "sqlite:///./we_eat.db"
     FIREBASE_PROJECT_ID: str = ""
+    YELP_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
