@@ -20,3 +20,6 @@ class Restaurant(BaseModel):
     rating: float
     price_level: int
     address: str
+    url: Optional[str] = None
+    distance: Optional[float] = None
+    hours_today: Optional[str] = None
